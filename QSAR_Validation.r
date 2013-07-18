@@ -25,33 +25,45 @@ readAndCombiValiData <- function(outputDir = "/home/dat/WORK/output/", dataFile1
   return (evalData)
 }
 # calculate the squared correlation cofficient, depends on yMean and yiCalc
-func.calcXSquare <- function(yiCalc, yi, yMean){
+calcXSquare <- function(yiCalc, yi, yMean){
 	return( 1 - sum( (yiCalc - yi) * (yiCalc - yi) ) /
 				sum( (yi - yMean) * (yi - yMean) )
 	)
 }
 # calculate the root mean squared error (RMSE) / or residual standard error (RSE)
-func.calcRMSE <- function(yiCalc, yi, RSE=FALSE){
+calcRMSE <- function(yiCalc, yi, RSE=FALSE){
 	n 	= NROW(yiCalc)
 	if (RSE)
 		n = n - 2
 	return( sqrt( sum( (yiCalc - yi) * (yiCalc - yi) ) / n ) )
 }
-
+# calculate the r²_m metric and reverse r²_m (r'²_m) metric by interchange the axes
+calcR2m <- function(yObs, yPred, REVERSE=FALSE) {	
+	if (REVERSE) { # to calculate the reverse need to interchange the yObs and yPred value
+		tmp 	= yObs
+		yObs	= yPred
+		yPred	= tmp
+	}
+	k 	= sum(yObs*yPred)/(sum(yPred)^2)
+	r2_0	= 1 - ( sum((yObs - k*yPred)^2) )/( (yObs - mean(yObs))^2 )
+	r2		= cor(yObs, yPred)
+	r2m		= r2 * ( 1 - sqrt(r2 - r2_0) )
+	return (r2m)
+}
 # \TODO: merge validation data after column
-mergeScoresData <- function(outputDir = "/home/dat/WORK/output/", dataFile1, dataFile2) {
-  dataSet1 	= read.csv(paste(outputDir,dataFile1,".csv", sep=""))
-  for (method in METHODS) {
-    dataSet2 	= read.csv(paste(outputDir,"ML-Scores/",dataFile2,method,".csv", sep=""))
-    mergeData	= merge(dataSet1, dataSet2[,1:2], by.x=1 , by.y=1)
-    colnames(mergeData)[length(mergeData[1,])] = method
-    dataSet1 	= mergeData
-  }
-  names(mergeData)[1] = "PDB"
-  write.csv(mergeData, file=paste(outputDir,dataFile1,"_all.csv",sep=""),row.names = FALSE)
+mergeScoresData <- function(outputDir = "/home/dat/WORK/output/", dataSet1, dataFile2) {	
+	for (method in METHODS) {
+		dataSet2 	= read.csv(paste(outputDir,"ML-Scores/",dataFile2,method,".csv", sep=""))
+		mergeData	= merge(dataSet1, dataSet2[,1:2], by.x=1 , by.y=1)
+		colnames(mergeData)[length(mergeData[1,])] = method
+		dataSet1 	= mergeData
+	}
+	names(mergeData)[1] = "PDB"
+	write.csv(mergeData, file=paste(outputDir,dataFile2,"all.csv",sep=""),row.names = FALSE)
 }
 
-#
+
+# \TODO: explain
 calcValidationMetric <- function(yObs, yPred,  method = "lm") {
 	modelData 	= data.frame(cbind(yObs, yPred))
 	# calculate the fitting from linear model
@@ -61,40 +73,42 @@ calcValidationMetric <- function(yObs, yPred,  method = "lm") {
 		model = glm(data = modelData, formula = yPred ~ yObs)
 		
 	yFit 		= predict(model)
-	
-	obsMean 	= mean(yObs)	
-	r2			= func.calcXSquare(yFit, yObs, obsMean)
-	r2.nofit	= func.calcXSquare(yPred, yObs, obsMean)
-	r2.pearson	= cor(yPred, yObs)^2
-	n 			= NROW(yFit)
-	r2.adj		= (r2*(n-1) - 1) / (n-2)
-	rmse		= func.calcRMSE(yFit,  yObs)
-	rse			= func.calcRMSE(yFit,  yObs, RSE=TRUE)
-	# or we could get the same metrics from summary of model in R
+	# we could calculate the r2 yourself, or we could get the same metrics from summary of model in R
 	sm = summary(model)
-	if (sm$sigma != rse) print(paste(sm$sigma, rse))
-	if (sm$r.squared != r2) print(paste(sm$r.squared, r2))
-	if (sm$adj.r.squared != r2.adj) print(paste(sm$adj.r.squared, r2.adj))
-	 
+	obsMean 	= mean(yObs)	
+	r2			= sm$r.squared #calcXSquare(yFit, yObs, obsMean)
+	r2.nofit	= calcXSquare(yPred, yObs, obsMean)
+	r2.pearson	= cor(yPred, yObs)^2
+	# n 			= NROW(yFit)
+	r2.adj		= sm$adj.r.squared #(r2*(n-1) - 1) / (n-2)
+	rmse		= calcRMSE(yFit,  yObs)
+	rse			= sm$sigma #calcRMSE(yFit,  yObs, RSE=TRUE)
+	r2m			= calcR2m(yObs = yObs, yPred = yPred)
+	r2m.reverse	= calcR2m(yObs = yObs, yPred = yPred, REVERSE = TRUE)
+	
 	return (list (	"r2" 	= r2,
 					"r2.adj"= r2.adj, 
-					"r2.nofit"	= r2.nofit, 
-					"r2.pearson"= r2.pearson, 
-					"rmse" 	= rmse, 
+					"r2.nofit"		= r2.nofit, 
+					"r2.pearson"	= r2.pearson, 
+					"rmse" 	= rmse,
+					"r2m"	= r2m, 
+					"r2m.reverse"	= r2m.reverse, 
 					"rse"	= rse))
 }
 
 outputDir	= "/home/dat/WORK/output/unprepared/"
 set1File	= "CSAR_set1_unprepared"
 set2File	= "CSAR_set2_unprepared"
-CSAR 		= checkNA(readAndCombiValiData(outputDir, set1File, set2File))
+CSAR		= checkNA(readAndCombiValiData(outputDir, set1File, set2File))
 
 yObs		= CSAR[, 2] # experimental
 yPred		= CSAR[, 3]
 
 test 		= calcValidationMetric(yObs, yPred, method = "lm")
-testFaith 	= calcValidationMetric(yObs = faithful[, 1], yPred = faithful[, 2], method = "lm")
-testdata 	= data.frame(cbind(yObs, yPred))
-
+#testdata 	= data.frame(cbind(yObs, yPred))
 #cvq2(testdata, yObs ~ yPred)
-	
+
+CSAR_all	= mergeScoresData(dataSet1 = CSAR, dataFile2 = 'CSAR_PDBbind12nowater_')
+CSAR_set1 	= mergeScoresData(dataSet1 = read.csv(paste(outputDir,set1File,".csv", sep="")), dataFile2 = 'CSAR_PDBbind12nowater-set1_')
+CSAR_set2 	= mergeScoresData(dataSet1 = read.csv(paste(outputDir,set2File,".csv", sep="")), dataFile2 = 'CSAR_PDBbind12nowater-set2_')	
+

@@ -25,17 +25,16 @@ RFtestData_07proton		= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_te
 RFtrainData_12proton 	= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_training12_proton.csv", na.strings=c(".", "NA", "", "?"))
 RFtestData_12proton	= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_test12_proton.csv", na.strings=c(".", "NA", "", "?"))
 
+RFtrainData_12nowater 	= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_training12_nowater.csv", na.strings=c(".", "NA", "", "?"))
+RFtestData_12nowater	= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_test12_nowater.csv", na.strings=c(".", "NA", "", "?"))
+
 RFtrainData_12 		= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_training12.csv", na.strings=c(".", "NA", "", "?"))
 RFtestData_12		= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_test12.csv", na.strings=c(".", "NA", "", "?"))
 
 CSARset1		= read.csv("/home/dat/WORK/output/descriptors/RF/CSARset1.csv", na.strings=c(".", "NA", "", "?"))
 CSARset2		= read.csv("/home/dat/WORK/output/descriptors/RF/CSARset2.csv", na.strings=c(".", "NA", "", "?"))
 CSARset_all		= rbind(CSARset1, CSARset2)
-# \TODO: quick and dirty to remove FXa from CSAR set
-FXa 		= read.table("/home/dat/WORK/output/FXa.txt")
-FXa 		= FXa[,1]
-CSARset_all	= CSARset_all[!CSARset_all[,1] %in% FXa,]
-CSAR_SFC	= read.csv("/home/dat/WORK/output/descriptors/SFC/CSAR2010_test_set.csv", na.strings=c(".", "NA", "", "?"))
+CSAR_SFC		= read.csv("/home/dat/WORK/output/descriptors/SFC/CSAR2010_test_set.csv", na.strings=c(".", "NA", "", "?"))
 ##################################################
 # DATA PRE-PROCESSING				 #
 ##################################################
@@ -73,14 +72,21 @@ RFtestData_12	= RFtestData_12[,RFdesc]
 RFtrainData_12proton	= RFtrainData_12proton[,RFdesc]
 RFtestData_12proton		= RFtestData_12proton[,RFdesc]
 
+RFtrainData_12nowater	= RFtrainData_12nowater[,RFdesc]
+RFtestData_12nowater	= RFtestData_12nowater[,RFdesc]
+
 CSARset1	= CSARset1[,RFdesc]
 CSARset2	= CSARset2[,RFdesc]
 CSARset_all	= CSARset_all[,RFdesc]
+# \TODO: quick and dirty to remove FXa from CSAR set
+FXa 		= read.table("/home/dat/WORK/output/FXa.txt")
+FXa 		= FXa[,1]
+CSARset_all	= CSARset_all[!CSARset_all[,1] %in% FXa, ]
 
 CSAR_SFC	= CSAR_SFC[,iSFCdesc]
 
 ##### DEFINE all the ML methods #####
-METHODS		= c("BRT", "SVM", "RF")
+METHODS		= c("BRT", "SVM-nu", "SVM-eps", "RF")
 DATA_FNAMES	= c("RF-Score07-", "RF-Score12-", "RF-Score07proton-", "RF-Score12proton-", 
 		    "SFC-Score07-",
 		    "RF_SFC-Score07-", "RF_SFC-Score07proton-",
