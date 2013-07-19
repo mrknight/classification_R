@@ -70,7 +70,8 @@ calcR2m <- function(yObs, yPred, REVERSE=FALSE) {
 }
 
 # calc some validation metrics from a given observer and predicted values
-calcValidationMetric <- function(yObs, yPred,  method = "lm") {
+# \param: yMean if given then is a vector of 2 values
+calcValidationMetric <- function(yObs, yPred,  method = "lm", yMean = NULL) {
 	yPred = abs(yPred)
 	modelData 	= data.frame(cbind(yObs, yPred))
 	# calculate the fitting from linear model
@@ -83,31 +84,39 @@ calcValidationMetric <- function(yObs, yPred,  method = "lm") {
 	# we could calculate the r2 yourself, or we could get the same metrics from summary of model in R
 	sm 			= summary(model)
 	obsMean 	= mean(yObs)
-	r2			= sm$r.squared #calcXSquare(yFit, yObs, obsMean)
-	r2.nofit	= calcXSquare(yPred, yObs, obsMean)
+	r2.pred		= calcXSquare(yFit, yObs, obsMean) # sm$r.squared
+#	r2.nofit	= calcXSquare(yPred, yObs, obsMean)
 	r2.pearson	= cor(yPred, yObs)^2
-	# n 			= NROW(yFit)
+# 	n 			= NROW(yFit)
 	r2.adj		= sm$adj.r.squared #(r2*(n-1) - 1) / (n-2)
-	rmse		= calcRMSE(yPred, yObs)
+#	rmse		= calcRMSE(yPred, yObs)
 	rse			= sm$sigma #calcRMSE(yFit, yObs, RSE=TRUE)
 	r2m			= calcR2m(yObs = yObs, yPred = yPred)
-	r2m.reverse	= calcR2m(yObs = yObs, yPred = yPred, REVERSE = TRUE)
-	r2m.delta	= abs(r2m - r2m.reverse)
-	r2m.average	= (r2m + r2m.reverse) / 2
+#	r2m.reverse	= calcR2m(yObs = yObs, yPred = yPred, REVERSE = TRUE)
+#	r2m.delta	= abs(r2m - r2m.reverse)
+#	r2m.average	= (r2m + r2m.reverse) / 2
 	
+	r2.train	= NA
+	r2.overall	= NA
+	if (!is.null(yMean)) { # if yMean is given
+		if (!is.na(yMean[1])) r2.train		= calcXSquare(yFit, yObs, yMean[1])
+		if (!is.na(yMean[2])) r2.overall	= calcXSquare(yFit, yObs, yMean[2])
+	}
 	return (list (	"r2.pearson"	= r2.pearson, 
-					"r2" 			= r2,
+					"r2.pred" 		= r2.pred,
+					"r2.train"		= r2.train, 
+					"r2.overall"	= r2.overall, 
 					"r2.adj"		= r2.adj, 
-					"r2.nofit"		= r2.nofit, 
+#					"r2.nofit"		= r2.nofit, 
 					"r2m"			= r2m, 
-					"r2m.reverse"	= r2m.reverse, 
-					"r2m.delta"		= r2m.delta, 
-					"r2m.average"	= r2m.average, 
-					"rmse" 	= rmse,
+#					"r2m.reverse"	= r2m.reverse, 
+#					"r2m.delta"		= r2m.delta, 
+#					"r2m.average"	= r2m.average, 
+#					"rmse" 	= rmse,
 					"rse"	= rse))
 }
 
 # same as calcValidationMetric but with other param order and return as a vector
-getAllMetrics <- function(yPred, yObs) {
-	return ( unlist(calcValidationMetric(yObs = yObs, yPred = yPred, method = "lm")) )
+getAllMetrics <- function(yPred, yObs,  yMean = NULL) {
+	return ( unlist(calcValidationMetric(yObs = yObs, yPred = yPred, yMean = yMean, method = "lm")) )
 }
