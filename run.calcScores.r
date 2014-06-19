@@ -11,9 +11,12 @@ library(mboost)
 source("init.readData.r")
 source("lib.prediction.r")
 
-RFallData_12nowater = rbind(RFtrainData_12, RFtestData_12)
+#RFallData_12nowater = rbind(RFtrainData_12, RFtestData_12)
+METHODS		= c("RF")
 for (method in METHODS) 
 {
+	predictMLscore(trainData=RFtrainData_12, testData=RFtestData_12, method=method, outFile=paste("CASF12_", method, ".csv", sep=""))
+
 #	RF_CSAR = RFtrainData_12nowater[!RFtrainData_12nowater[,1] %in% CSARset1[,1],]
 #	predictMLscore(RF_CSAR, CSARset1, method=method, outFile=paste("CSAR_PDBbind12nowater-set1_", method, ".csv", sep=""))
 	# give warning because of overlapping in training and test
@@ -27,8 +30,8 @@ for (method in METHODS)
 #	RF_CSAR = RFtrainData_12nowater[!RFtrainData_12nowater[,1] %in% CSARset_all[,1],]
 #	predictMLscore(RF_CSAR, CSARset_all, method=method, outFile=paste("CSAR_PDBbind12nowater_", method, ".csv", sep=""))	
 
-	RF_CSAR = RFallData_12nowater[!RFallData_12nowater[,1] %in% CSARset_all[,1],]
-	predictMLscore(RF_CSAR, CSARset_all, method=method, outFile=paste("CSAR_PDBall12nowater_", method, ".csv", sep=""))	
+#	RF_CSAR = RFallData_12nowater[!RFallData_12nowater[,1] %in% CSARset_all[,1],]
+#	predictMLscore(RF_CSAR, CSARset_all, method=method, outFile=paste("CSAR_PDBall12nowater_", method, ".csv", sep=""))	
 }
 
 

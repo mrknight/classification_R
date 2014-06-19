@@ -13,6 +13,20 @@ existNA <- function(vec) {
 	return (sum(is.na(vec)) > 0)
 }
 
+# check two data frames with a given index whether two data frames have common rows
+checkCommonRows <- function(dataA, dataB, index) {
+	if (length(intersect(dataA[,index], dataB[,index])) > 0) {
+		return (TRUE)
+	}
+	else return (FALSE)
+}
+
+# create complements from 2 data frames with a given index row (= dataA - dataB). Pay attention to the order of two sets.
+createRowsComplementsData <- function(dataA, dataB, index) {
+	newData = dataA[!(dataA[,index] %in% dataB[,index]),]
+	return (newData)
+}
+
 # read validation data from cvs file at outputDir, if another file exists then row binding two datas 
 readAndCombiValiData <- function(outputDir = "/home/dat/WORK/output/", dataFile1, dataFile2="") {
   evalData 	= read.csv(paste(outputDir,dataFile1,".csv", sep=""))

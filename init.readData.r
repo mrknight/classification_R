@@ -1,10 +1,10 @@
-##################################################
-# MERGE 2 data sets				 #
-##################################################
+#####################################################
+# MERGE 2 data sets				 					#
+#####################################################
 mergeDesc2 <- function(data1, data2, nameIndex1, nameIndex2, selectCol1, selectCol2) {
 	selectData1 	= data1[,selectCol1]
 	selectData2 	= data2[,selectCol2]
-	mergeData 	= merge(selectData1, selectData2, by.x = nameIndex1, by.y = nameIndex2)
+	mergeData 		= merge(selectData1, selectData2, by.x = nameIndex1, by.y = nameIndex2)
 	# \TODO: check descriptors and remove ZERO descriptors
 	#for (i in 1:ncol(mergeData)) {
 	#  print(sum(mergeData[,i]==0))
@@ -23,7 +23,7 @@ RFtrainData_07proton 	= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_t
 RFtestData_07proton		= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_test07_proton.csv", na.strings=c(".", "NA", "", "?"))
 
 RFtrainData_12proton 	= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_training12_proton.csv", na.strings=c(".", "NA", "", "?"))
-RFtestData_12proton	= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_test12_proton.csv", na.strings=c(".", "NA", "", "?"))
+RFtestData_12proton		= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_test12_proton.csv", na.strings=c(".", "NA", "", "?"))
 
 RFtrainData_12nowater 	= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_training12_nowater.csv", na.strings=c(".", "NA", "", "?"))
 RFtestData_12nowater	= read.csv("/home/dat/WORK/output/descriptors/RF/PDBbind_test12_nowater.csv", na.strings=c(".", "NA", "", "?"))
@@ -35,14 +35,14 @@ CSARset1		= read.csv("/home/dat/WORK/output/descriptors/RF/CSARset1.csv", na.str
 CSARset2		= read.csv("/home/dat/WORK/output/descriptors/RF/CSARset2.csv", na.strings=c(".", "NA", "", "?"))
 CSARset_all		= rbind(CSARset1, CSARset2)
 CSAR_SFC		= read.csv("/home/dat/WORK/output/descriptors/SFC/CSAR2010_test_set.csv", na.strings=c(".", "NA", "", "?"))
-##################################################
-# DATA PRE-PROCESSING				 #
-##################################################
+#####################################################
+# DATA PRE-PROCESSING				 				#
+#####################################################
 
 SFCdesc		= c(69, 3:68)
 SFCnameIndex= 1 # index of the PDB name
 RFdesc	 	= c(82, 0, 1:3,6, 10:12, 15, 19:21, 24, 28:30, 33, 37:39, 42, 46:48, 51, 55:57, 60, 64:66, 69, 73:75, 78) 
-RFdesc		= RFdesc + 1# move the index to 1 pos
+RFdesc		= RFdesc + 1 # move the index to 1 pos
 RFnameIndex	= 1 # index of the PDB name
 
 # test data for PDBbind which merges RF and SFC descriptors together
