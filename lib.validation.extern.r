@@ -13,47 +13,6 @@ existNA <- function(vec) {
 	return (sum(is.na(vec)) > 0)
 }
 
-# check two data frames with a given index whether two data frames have common rows
-checkCommonRows <- function(dataA, dataB, index) {
-	if (length(intersect(dataA[,index], dataB[,index])) > 0) {
-		return (TRUE)
-	}
-	else return (FALSE)
-}
-
-# create complements from 2 data frames with a given index row (= dataA - dataB). Pay attention to the order of two sets.
-createRowsComplementsData <- function(dataA, dataB, index) {
-	newData = dataA[!(dataA[,index] %in% dataB[,index]),]
-	return (newData)
-}
-
-# read validation data from cvs file at outputDir, if another file exists then row binding two datas 
-readAndCombiValiData <- function(outputDir = "/home/dat/WORK/output/", dataFile1, dataFile2="") {
-  evalData 	= read.csv(paste(outputDir,dataFile1,".csv", sep=""))
-  if (dataFile2 != "") { # if another dataFile2 exists, then combine rows of the 2 datasets
-    evalData2 	= read.csv(paste(outputDir,dataFile2,".csv", sep=""))
-    evalData	= rbind(evalData, evalData2)
-    # \TODO: (fix) quick and dirty to remove FXa from CSAR set
-    FXa = read.table("/home/dat/WORK/output/FXa.txt")
-    FXa = FXa[,1]
-    evalData	= evalData[!evalData[, 1] %in% FXa,]
-  }
-  return (evalData)
-}
-
-# merge validation data after column
-mergeScoresData <- function(outputDir = "/home/dat/WORK/output/", dataSet1, dataFile2) {	
-	for (method in METHODS) {
-		dataSet2 	= read.csv(paste(outputDir,"ML-Scores/",dataFile2,method,".csv", sep=""))
-		mergeData	= merge(dataSet1, dataSet2[,1:2], by.x=1 , by.y=1)
-		colnames(mergeData)[length(mergeData[1,])] = method
-		dataSet1 	= mergeData
-	}
-	names(mergeData)[1] = "PDB"
-	write.csv(mergeData, file=paste(outputDir,dataFile2,"allScores.csv",sep=""),row.names = FALSE)
-	return (mergeData)
-}
-
 # calculate the squared correlation cofficient, depends on yMean and yiCalc
 calcXSquare <- function(yiCalc, yi, yMean){
 	return( 1 - sum( (yiCalc - yi) * (yiCalc - yi) ) /
